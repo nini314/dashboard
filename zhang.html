@@ -71,18 +71,45 @@ tr.summary-row:hover td { background:#fef9e7; }
 .placeholder { background:#fff; border-radius:8px; padding:40px; text-align:center; color:#6b7280; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
 .info-box { background:#eef2ff; border-left:4px solid #6366f1; padding:12px 16px; border-radius:4px; margin-bottom:12px; font-size:13px; color:#3730a3; }
 
-/* 筛选栏 */
-.filter-bar { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:12px; padding:10px 12px; background:#f8fafc; border-radius:6px; font-size:13px; }
-.filter-bar label { display:flex; align-items:center; gap:6px; color:#374151; }
-.filter-bar select, .filter-bar input { padding:4px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px; outline:none; }
-.filter-bar select:focus, .filter-bar input:focus { border-color:#3b82f6; }
+/* 筛选栏（已废弃改用表头点击） */
+.filter-bar { display:none; }
 
-/* 可排序表头 */
-th.sortable { cursor:pointer; user-select:none; }
-th.sortable:hover { background:#e0e7ff; color:#1e3a8a; }
-th.sortable::after { content:' ⇅'; color:#9ca3af; font-size:10px; }
-th.sortable.sort-asc::after { content:' ↑'; color:#3b82f6; }
-th.sortable.sort-desc::after { content:' ↓'; color:#3b82f6; }
+/* 可点击表头 */
+th.filterable { cursor:pointer; user-select:none; position:relative; }
+th.filterable:hover { background:#e0e7ff; color:#1e3a8a; }
+.hd-arrow { color:#9ca3af; font-size:10px; margin-left:2px; }
+.sort-asc .hd-arrow::before { content:'↑'; color:#3b82f6; }
+.sort-desc .hd-arrow::before { content:'↓'; color:#3b82f6; }
+
+/* 弹层 */
+.hd-popover {
+  position:absolute; z-index:1000;
+  background:#fff; border:1px solid #d1d5db; border-radius:6px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.15);
+  min-width:220px; max-width:320px; max-height:380px;
+  display:flex; flex-direction:column;
+  font-size:13px;
+}
+.popover-hd { padding:8px 12px; border-bottom:1px solid #e5e7eb; font-weight:600; display:flex; justify-content:space-between; align-items:center; background:#f9fafb; border-radius:6px 6px 0 0; }
+.popover-close { cursor:pointer; color:#9ca3af; font-size:14px; padding:2px 6px; }
+.popover-close:hover { color:#ff4d4f; }
+.popover-row { padding:8px 12px; border-bottom:1px solid #f3f4f6; }
+.popover-row label { display:inline-flex; align-items:center; gap:4px; margin-right:8px; cursor:pointer; }
+.popover-row input[type=text], .popover-row input[type=number] {
+  padding:4px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:12px; width:120px;
+}
+.popover-list { overflow-y:auto; max-height:240px; padding:6px 12px; }
+.popover-list-hd { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid #e5e7eb; margin-bottom:4px; font-size:12px; color:#6b7280; }
+.popover-list-hd label { cursor:pointer; }
+.popover-list-cnt { color:#9ca3af; font-size:11px; }
+.popover-item { display:flex; align-items:center; gap:4px; padding:3px 4px; cursor:pointer; font-size:12px; }
+.popover-item:hover { background:#f3f4f6; }
+.popover-item-cnt { color:#9ca3af; font-size:11px; margin-left:auto; }
+.popover-ft { padding:8px 12px; border-top:1px solid #e5e7eb; display:flex; gap:8px; justify-content:flex-end; background:#f9fafb; border-radius:0 0 6px 6px; }
+.popover-ft button { padding:4px 14px; border:1px solid #3b82f6; background:#3b82f6; color:#fff; border-radius:4px; font-size:12px; cursor:pointer; }
+.popover-ft button:hover { background:#2563eb; }
+.popover-ft button:last-child { background:#fff; color:#6b7280; border-color:#d1d5db; }
+.popover-ft button:last-child:hover { background:#f3f4f6; }
 </style>
 </head>
 <body>
@@ -268,36 +295,20 @@ th.sortable.sort-desc::after { content:' ↓'; color:#3b82f6; }
         <h3>📋 账号均值数据</h3>
         <span class="cnt">共 <span id="accountAvgCount">67</span> 个</span>
       </div>
-      <div class="filter-bar">
-        <label>组长筛选：
-          <select id="avgLeaderFilter" onchange="filterAccountAvg()">
-            <option value="">全部</option>
-            <option value="陈志伟">陈志伟</option>
-            <option value="姚广涛">姚广涛</option>
-            <option value="陈鑫">陈鑫</option>
-            <option value="崔健健">崔健健</option>
-            <option value="黄洁">黄洁</option>
-            <option value="金璇">金璇</option>
-          </select>
-        </label>
-        <label>抖音号搜索：
-          <input type="text" id="avgAccSearch" placeholder="输入账号名..." oninput="filterAccountAvg()" />
-        </label>
-        <label>最低均值：
-          <input type="number" id="avgMinPct" placeholder="0" step="1" min="0" max="999" oninput="filterAccountAvg()" style="width:80px"/>%
-        </label>
-        <label>最低粉丝量(万)：
-          <input type="number" id="avgMinFans" placeholder="0" step="0.1" min="0" oninput="filterAccountAvg()" style="width:80px"/>
-        </label>
-      </div>
       <div class="table-scroll">
         <table id="accountAvgTable">
           <thead><tr>
-            <th data-col="0">排名</th><th data-col="1">抖音号</th><th data-col="2" class="num sortable">粉丝量</th>
-            <th data-col="3">负责人</th><th data-col="4">组长</th>
-            <th data-col="5" class="num sortable">累计均值</th><th data-col="6" class="num sortable">累计毛利</th>
-            <th data-col="7" class="num sortable">昨日毛利</th><th data-col="8" class="num sortable">昨日消耗</th>
-            <th data-col="9" class="num sortable">昨日利润率</th><th data-col="10" class="num sortable">总利润率</th>
+            <th data-col="0" data-type="rank">排名</th>
+            <th data-col="1" data-type="text" data-key="account" class="filterable">抖音号<span class="hd-arrow">⇅</span></th>
+            <th data-col="2" data-type="num" data-key="fans" class="filterable sortable">粉丝量<span class="hd-arrow">⇅</span></th>
+            <th data-col="3" data-type="text" data-key="mgr" class="filterable">负责人<span class="hd-arrow">⇅</span></th>
+            <th data-col="4" data-type="text" data-key="leader" class="filterable">组长<span class="hd-arrow">⇅</span></th>
+            <th data-col="5" data-type="num" data-key="cum_mean" class="filterable sortable">累计均值<span class="hd-arrow">⇅</span></th>
+            <th data-col="6" data-type="num" data-key="cum_profit" class="filterable sortable">累计毛利<span class="hd-arrow">⇅</span></th>
+            <th data-col="7" data-type="num" data-key="yest_profit" class="filterable sortable">昨日毛利<span class="hd-arrow">⇅</span></th>
+            <th data-col="8" data-type="num" data-key="yest_consume" class="filterable sortable">昨日消耗<span class="hd-arrow">⇅</span></th>
+            <th data-col="9" data-type="num" data-key="yest_rate" class="filterable sortable">昨日利润率<span class="hd-arrow">⇅</span></th>
+            <th data-col="10" data-type="num" data-key="total_rate" class="filterable sortable">总利润率<span class="hd-arrow">⇅</span></th>
           </tr></thead>
           <tbody>
 <tr><td><span class="rank-num">1</span></td><td><b>相汇商贸</b></td><td class="num">371</td><td>陈志伟</td><td>陈志伟</td><td class="num" style="">570.61%</td><td class="num">4.5万</td><td class="num">4,406</td><td class="num">7,156</td><td class="num" style="color:#52c41a">61.58%</td><td class="num" style="color:#52c41a">67.11%</td></tr>
@@ -370,6 +381,7 @@ th.sortable.sort-desc::after { content:' ↓'; color:#3b82f6; }
           </tbody>
         </table>
       </div>
+      <div id="hdPopover" class="hd-popover" style="display:none"></div>
     </div>
 
   </div>
@@ -537,77 +549,292 @@ function toggleExpand(btn, acc){
   else{tr.style.display='none';btn.innerText='📊';}
 }
 
-// 账号均值筛选
-var avgSortState = {col:-1, dir:1};
-function filterAccountAvg(){
-  var leader = document.getElementById('avgLeaderFilter').value;
-  var search = document.getElementById('avgAccSearch').value.toLowerCase();
-  var minPct = parseFloat(document.getElementById('avgMinPct').value) || 0;
-  var minFans = parseFloat(document.getElementById('avgMinFans').value) || 0;
+// 账号均值表头筛选（点击表头弹出）
+var avgSortState = {col:-1, dir:0};  // 0=无排序 1=升序 -1=降序
+var avgFilters = {};  // 每个列的筛选条件 {colIdx: {type, value}}
+var activePopover = null;
+
+function closePopover(){
+  var p = document.getElementById('hdPopover');
+  if(p){p.style.display='none';p.innerHTML='';}
+  activePopover = null;
+}
+
+function applyAvgFilters(){
   var table = document.getElementById('accountAvgTable');
   if(!table) return;
   var tbody = table.tBodies[0];
   var rows = tbody.rows;
   var visible = 0;
-  for(var i=0; i<rows.length; i++){
+  for(var i=0;i<rows.length;i++){
     var r = rows[i];
     var tds = r.cells;
-    if(tds.length < 11) continue;
-    var acc = tds[1].innerText.trim().toLowerCase();
-    var leaderVal = tds[4].innerText.trim();
-    var fans = parseFloat(tds[2].innerText.replace(/[^0-9.]/g,'')) || 0;
-    var pct = parseFloat(tds[5].innerText.replace(/[^0-9.]/g,'')) || 0;
     var show = true;
-    if(leader && leaderVal !== leader) show = false;
-    if(search && acc.indexOf(search) === -1) show = false;
-    if(pct < minPct) show = false;
-    if(fans < minFans) show = false;
+    // 遍历所有筛选条件
+    for(var col in avgFilters){
+      var f = avgFilters[col];
+      var cellVal = '';
+      var cellNum = 0;
+      var cIdx = parseInt(col);
+      if(cIdx === 1){
+        cellVal = tds[1].innerText.trim().toLowerCase();
+        if(f.type === 'text-contains' && cellVal.indexOf(f.value) === -1) show = false;
+        else if(f.type === 'text-in' && f.value.indexOf(cellVal) === -1) show = false;
+      } else if(cIdx === 3 || cIdx === 4){
+        cellVal = tds[cIdx].innerText.trim();
+        if(f.type === 'text-in' && f.value.indexOf(cellVal) === -1) show = false;
+      } else {
+        var numStr = tds[cIdx].innerText.replace(/[^0-9.\-]/g,'');
+        cellNum = parseFloat(numStr) || 0;
+        if(f.type === 'num-min' && cellNum < f.value) show = false;
+        else if(f.type === 'num-max' && cellNum > f.value) show = false;
+      }
+      if(!show) break;
+    }
     r.style.display = show ? '' : 'none';
     if(show) visible++;
   }
   document.getElementById('accountAvgCount').innerText = visible;
 }
 
-// 排序（点击表头）
-function sortAvgTable(colIdx){
-  if(colIdx === avgSortState.col){
-    avgSortState.dir = -avgSortState.dir;
+function sortAvgBy(colIdx){
+  if(avgSortState.col === colIdx){
+    avgSortState.dir = avgSortState.dir === 1 ? -1 : (avgSortState.dir === -1 ? 0 : 1);
   } else {
     avgSortState.col = colIdx;
-    avgSortState.dir = -1;  // 默认降序
+    avgSortState.dir = 1;
   }
   var table = document.getElementById('accountAvgTable');
   if(!table) return;
-  // 表头样式
   var ths = table.tHead.rows[0].cells;
   for(var i=0;i<ths.length;i++){
-    ths[i].classList.remove('sort-asc','sort-desc');
+    var arr = ths[i].querySelector('.hd-arrow');
+    if(arr){
+      arr.classList.remove('sort-asc','sort-desc');
+      if(i === avgSortState.col){
+        if(avgSortState.dir === 1) arr.classList.add('sort-asc');
+        else if(avgSortState.dir === -1) arr.classList.add('sort-desc');
+      }
+    }
   }
-  ths[colIdx].classList.add(avgSortState.dir > 0 ? 'sort-asc' : 'sort-desc');
-  // 排序
   var tbody = table.tBodies[0];
   var rows = Array.prototype.slice.call(tbody.rows);
-  rows.sort(function(a,b){
-    var av = a.cells[colIdx].innerText.replace(/[^0-9.\-]/g,'');
-    var bv = b.cells[colIdx].innerText.replace(/[^0-9.\-]/g,'');
-    var an = parseFloat(av), bn = parseFloat(bv);
-    if(!isNaN(an) && !isNaN(bn)) return (an-bn) * avgSortState.dir;
-    return av.localeCompare(bv) * avgSortState.dir;
-  });
-  for(var i=0;i<rows.length;i++) tbody.appendChild(rows[i]);
+  if(avgSortState.dir !== 0){
+    var dir = avgSortState.dir;
+    rows.sort(function(a,b){
+      var av = a.cells[colIdx].innerText.replace(/[^0-9.\-]/g,'');
+      var bv = b.cells[colIdx].innerText.replace(/[^0-9.\-]/g,'');
+      var an = parseFloat(av), bn = parseFloat(bv);
+      if(!isNaN(an) && !isNaN(bn)) return (an-bn) * dir;
+      return av.localeCompare(bv, 'zh') * dir;
+    });
+    for(var i=0;i<rows.length;i++) tbody.appendChild(rows[i]);
+  }
 }
 
-// 初始化时绑定排序
+function openTextPopover(th, colIdx, key){
+  var table = document.getElementById('accountAvgTable');
+  var tbody = table.tBodies[0];
+  var allVals = {};
+  for(var i=0;i<tbody.rows.length;i++){
+    var v = tbody.rows[i].cells[colIdx].innerText.trim();
+    if(v) allVals[v] = (allVals[v]||0)+1;
+  }
+  var vals = Object.keys(allVals).sort(function(a,b){return allVals[b]-allVals[a] || a.localeCompare(b,'zh');});
+  var cur = avgFilters[colIdx] || {type:'text-in', value:null, selected:null};
+  var selected = cur.type === 'text-in' && cur.value ? cur.value : null;
+  var contains = cur.type === 'text-contains' ? cur.value : '';
+
+  var html = '<div class="popover-hd">筛选 ' + th.innerText.replace('⇅','').trim() + ' <span class="popover-close" onclick="closePopover()">✕</span></div>';
+  if(colIdx === 1){
+    html += '<div class="popover-row"><input type="text" id="popSearch" placeholder="搜索抖音号..." value="' + escAttr(contains||'') + '"/></div>';
+    html += '<div class="popover-row"><label><input type="radio" name="popMode'+colIdx+'" value="contains" ' + (cur.type==='text-contains'?'checked':'') + '/> 模糊匹配</label><label><input type="radio" name="popMode'+colIdx+'" value="in" ' + (cur.type==='text-in'?'checked':'') + '/> 多选精确</label></div>';
+  }
+  html += '<div class="popover-list">';
+  html += '<div class="popover-list-hd"><label><input type="checkbox" id="popSelAll" ' + (selected && selected.length===vals.length?'checked':'') + '/> 全选</label><span class="popover-list-cnt">' + vals.length + ' 项</span></div>';
+  for(var i=0;i<vals.length;i++){
+    var checked = selected && selected.indexOf(vals[i]) >= 0 ? 'checked' : '';
+    html += '<label class="popover-item"><input type="checkbox" class="popSel" value="' + escAttr(vals[i]) + '" ' + checked + '/> ' + vals[i] + ' <span class="popover-item-cnt">(' + allVals[vals[i]] + ')</span></label>';
+  }
+  html += '</div>';
+  html += '<div class="popover-ft"><button onclick="applyTextFilter(' + colIdx + ')">应用</button><button onclick="clearFilter(' + colIdx + ')">清空</button></div>';
+
+  var p = document.getElementById('hdPopover');
+  p.innerHTML = html;
+  p.style.display = 'block';
+  // 定位
+  var rect = th.getBoundingClientRect();
+  p.style.top = (window.scrollY + rect.bottom + 2) + 'px';
+  p.style.left = (window.scrollX + rect.left) + 'px';
+  activePopover = colIdx;
+}
+
+function escAttr(s){return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function applyTextFilter(colIdx){
+  var table = document.getElementById('accountAvgTable');
+  var modeEls = document.getElementsByName('popMode'+colIdx);
+  var mode = 'in';
+  for(var i=0;i<modeEls.length;i++) if(modeEls[i].checked){mode=modeEls[i].value;break;}
+  if(mode === 'contains'){
+    var sVal = document.getElementById('popSearch').value.trim();
+    if(sVal){
+      avgFilters[colIdx] = {type:'text-contains', value:sVal.toLowerCase()};
+    } else {
+      delete avgFilters[colIdx];
+    }
+    closePopover();
+    applyAvgFilters();
+    return;
+  }
+  var sel = document.querySelectorAll('.popSel:checked');
+  var vals = [];
+  for(var i=0;i<sel.length;i++) vals.push(sel[i].value);
+  if(vals.length === 0){
+    delete avgFilters[colIdx];
+  } else {
+    avgFilters[colIdx] = {type:'text-in', value:vals};
+  }
+  closePopover();
+  applyAvgFilters();
+}
+
+function clearFilter(colIdx){
+  delete avgFilters[colIdx];
+  closePopover();
+  applyAvgFilters();
+}
+
+function openNumPopover(th, colIdx, key){
+  var cur = avgFilters[colIdx] || {};
+  var html = '<div class="popover-hd">筛选 ' + th.innerText.replace('⇅','').trim() + ' <span class="popover-close" onclick="closePopover()">✕</span></div>';
+  html += '<div class="popover-row"><label>最低值：<input type="number" id="popMin" step="any" value="' + (cur.min!=null?cur.min:'') + '"/></label></div>';
+  html += '<div class="popover-row"><label>最高值：<input type="number" id="popMax" step="any" value="' + (cur.max!=null?cur.max:'') + '"/></label></div>';
+  html += '<div class="popover-ft"><button onclick="applyNumFilter(' + colIdx + ')">应用</button><button onclick="clearFilter(' + colIdx + ')">清空</button></div>';
+  var p = document.getElementById('hdPopover');
+  p.innerHTML = html;
+  p.style.display = 'block';
+  var rect = th.getBoundingClientRect();
+  p.style.top = (window.scrollY + rect.bottom + 2) + 'px';
+  p.style.left = (window.scrollX + rect.left) + 'px';
+  activePopover = colIdx;
+}
+
+function applyNumFilter(colIdx){
+  var mn = document.getElementById('popMin').value;
+  var mx = document.getElementById('popMax').value;
+  var f = {};
+  if(mn !== '' && mn != null) f.min = parseFloat(mn);
+  if(mx !== '' && mx != null) f.max = parseFloat(mx);
+  if(Object.keys(f).length === 0){
+    delete avgFilters[colIdx];
+  } else {
+    f.type = 'num-range';
+    avgFilters[colIdx] = f;
+  }
+  closePopover();
+  applyAvgFilters();
+}
+
+// 应用数字筛选到显示逻辑
+function applyNumFilterToRow(tds, colIdx, f){
+  var numStr = tds[colIdx].innerText.replace(/[^0-9.\-]/g,'');
+  var n = parseFloat(numStr) || 0;
+  if(f.min != null && n < f.min) return false;
+  if(f.max != null && n > f.max) return false;
+  return true;
+}
+
+function onAvgHeaderClick(th, colIdx, type, key){
+  // 单击排序（如有 sortable），文本列直接弹筛选
+  if(type === 'text'){
+    openTextPopover(th, colIdx, key);
+  } else {
+    // 数字列单击排序，长按（dblclick）弹筛选
+    sortAvgBy(colIdx);
+  }
+}
+
+function onAvgHeaderDblClick(th, colIdx, type, key){
+  // 双击数字列弹筛选
+  if(type === 'num'){
+    openNumPopover(th, colIdx, key);
+  }
+}
+
+// 修改 applyAvgFilters 同时支持 num-range
+function applyAvgFilters(){
+  var table = document.getElementById('accountAvgTable');
+  if(!table) return;
+  var tbody = table.tBodies[0];
+  var rows = tbody.rows;
+  var visible = 0;
+  for(var i=0;i<rows.length;i++){
+    var r = rows[i];
+    var tds = r.cells;
+    var show = true;
+    for(var col in avgFilters){
+      var f = avgFilters[col];
+      var cIdx = parseInt(col);
+      if(cIdx === 1){
+        var cellVal = tds[1].innerText.trim().toLowerCase();
+        if(f.type === 'text-contains' && cellVal.indexOf(f.value) === -1){show=false;break;}
+        else if(f.type === 'text-in'){
+          if(!f.value || f.value.length === 0){continue;}
+          if(f.value.indexOf(cellVal) === -1){show=false;break;}
+        }
+      } else if(cIdx === 3 || cIdx === 4){
+        var cellVal2 = tds[cIdx].innerText.trim();
+        if(f.type === 'text-in'){
+          if(!f.value || f.value.length === 0){continue;}
+          if(f.value.indexOf(cellVal2) === -1){show=false;break;}
+        }
+      } else {
+        if(f.type === 'num-range'){
+          var numStr = tds[cIdx].innerText.replace(/[^0-9.\-]/g,'');
+          var n = parseFloat(numStr) || 0;
+          if(f.min != null && n < f.min){show=false;break;}
+          if(f.max != null && n > f.max){show=false;break;}
+        }
+      }
+    }
+    r.style.display = show ? '' : 'none';
+    if(show) visible++;
+  }
+  document.getElementById('accountAvgCount').innerText = visible;
+}
+
+// 初始化时绑定
 window.addEventListener('load', function(){
   var table = document.getElementById('accountAvgTable');
   if(table){
     var ths = table.tHead.rows[0].cells;
     for(var i=0;i<ths.length;i++){
-      if(ths[i].classList.contains('sortable')){
-        (function(idx){ths[i].addEventListener('click',function(){sortAvgTable(idx);});})(i);
-      }
+      (function(th,i){
+        var type = th.getAttribute('data-type');
+        var key = th.getAttribute('data-key');
+        if(type === 'rank') return;
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', function(e){
+          onAvgHeaderClick(th, i, type, key);
+          e.stopPropagation();
+        });
+        th.addEventListener('dblclick', function(e){
+          onAvgHeaderDblClick(th, i, type, key);
+          e.stopPropagation();
+        });
+      })(ths[i], i);
     }
   }
+  document.addEventListener('click', function(e){
+    var p = document.getElementById('hdPopover');
+    if(p && p.style.display !== 'none' && !p.contains(e.target)){
+      var isTh = false;
+      var ths2 = table ? table.tHead.rows[0].cells : [];
+      for(var i=0;i<ths2.length;i++) if(ths2[i] === e.target || ths2[i].contains(e.target)){isTh=true;break;}
+      if(!isTh) closePopover();
+    }
+  });
 });
 
 var TREND_LABELS = ["7.25", "7.26", "7.27", "7.28", "7.29", "7.30", "7.31", "8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8", "8.9", "8.10", "8.11"];
